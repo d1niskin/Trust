@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniTrust Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen">
+
+    <!-- Экран авторизации -->
+    <div id="login-screen" class="flex items-center justify-center min-h-screen bg-gray-900">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-96 text-center">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Вход для сотрудников</h2>
+            <input type="password" id="admin-password" placeholder="Пароль доступа" class="w-full border p-3 rounded mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
+            <button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700">Войти в систему</button>
+            <p id="login-error" class="text-red-500 text-sm mt-3 hidden">Неверный пароль</p>
+        </div>
+    </div>
+
+    <!-- Дашборд -->
+    <div id="dashboard-screen" class="hidden">
+        <!-- Шапка -->
+        <header class="bg-gray-900 text-white p-4 shadow-md flex justify-between items-center">
+            <h1 class="text-xl font-bold">UniTrust | Панель комплаенс-офицера</h1>
+            <button onclick="logout()" class="text-sm bg-red-600 px-4 py-2 rounded hover:bg-red-700">Выйти</button>
+        </header>
+
+        <main class="p-8 max-w-7xl mx-auto">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-700 uppercase text-xs">
+                            <th class="p-4 border-b w-1/6">ID / Дата</th>
+                            <th class="p-4 border-b w-1/6">Категория</th>
+                            <th class="p-4 border-b w-1/2">Описание нарушения и Чат</th>
+                            <th class="p-4 border-b w-1/12">Статус</th>
+                            <th class="p-4 border-b w-1/12">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tickets-table" class="text-sm">
+                        <!-- Сюда подгружаются заявки -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = "/api";
+        let currentKey = "";
+
+        async function login() {
+            const pwd = document.getElementById('admin-password').value;
+            try {
+                const res = await fetch(`${API_URL}/admin/tickets`, { headers: { 'admin-key': pwd } });
+                if (res.ok) {
+                    currentKey = pwd;
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('dashboard-screen').classList.remove('hidden');
+                    loadTickets();
+                } else { document.getElementById('login-error').classList.remove('hidden'); }
+            } catch (e) { alert("Сервер недоступен!"); }
+        }
+
+        async function loadTickets() {
+            const res = await fetch(`${API_URL}/admin/tickets`, { headers: { 'admin-key': currentKey } });
+            const tickets = await res.json();
+            const tbody = document.getElementById('tickets-table');
+            tbody.innerHTML = "";
+
+            tickets.forEach(t => {
+                const date = new Date(t.created_at).toLocaleString('ru');
+                let statusColor = t.status === "Новое" ? "bg-red-100 text-red-800" : t.status === "В работе" ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800";
+                
+                let mainFileHtml = t.file_url ? `<div class="mt-2"><a href="${t.file_url}" target="_blank" class="text-blue-600 underline text-xs font-bold hover:text-blue-800">📎 Открыть файл из жалобы</a></div>` : '';
+
+                let chatHtml = t.messages.map(m => {
+                    let fileHtml = m.file_url ? `<br><a href="${m.file_url}" target="_blank" class="text-blue-700 underline text-xs mt-1 inline-block">📎 Скачать файл</a>` : '';
+                    let delBtn = m.sender === 'Офицер' ? `<button onclick="deleteMsg(${m.id})" class="text-red-500 hover:underline text-xs ml-2">[удалить]</button>` : '';
+                    return `
+                    <div class="mb-1 text-xs p-2 rounded ${m.sender === 'Офицер' ? 'bg-blue-100 text-blue-900 ml-4 border border-blue-200' : 'bg-gray-100 text-gray-800 mr-4 border border-gray-200'}">
+                        <strong>${m.sender}:</strong> ${m.text} ${fileHtml} ${delBtn}
+                    </div>`;
+                }).join('');
+
+                if (t.messages.length === 0) chatHtml = '<div class="text-xs text-gray-400 text-center py-2">Нет сообщений</div>';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 border-b">
+                        <td class="p-4 align-top"><strong>${t.ticket_number}</strong><br><span class="text-xs text-gray-500">${date}</span></td>
+                        <td class="p-4 align-top font-medium text-gray-700">${t.category}</td>
+                        <td class="p-4 align-top">
+                            <div class="italic text-gray-600 mb-3 bg-gray-50 p-3 border border-gray-200 rounded">
+                                <b class="block mb-1 text-gray-800">Текст жалобы:</b> 
+                                ${t.description} 
+                                ${mainFileHtml}
+                            </div>
+                            
+                            <div class="chat-container max-h-40 overflow-y-auto mb-2 pr-2">${chatHtml}</div>
+                            
+                            <div class="flex flex-col gap-1 border-t pt-2 border-gray-200 mt-2">
+                                <div class="flex items-center gap-2">
+                                    <label class="text-xs text-gray-500 font-medium">Прикрепить файл:</label>
+                                    <input type="file" id="reply-file-${t.ticket_number}" class="text-xs border border-gray-300 p-1 rounded text-gray-600 w-full">
+                                </div>
+                                <div class="flex gap-2 mt-1">
+                                    <input type="text" id="reply-input-${t.ticket_number}" placeholder="Написать сообщение заявителю..." class="border border-gray-300 rounded p-1.5 text-xs w-full outline-none focus:ring-1 focus:ring-blue-500">
+                                    <button onclick="sendReply('${t.ticket_number}')" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-blue-700 transition">Отправить</button>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 align-top"><span class="px-2 py-1 rounded text-xs font-bold ${statusColor}">${t.status}</span></td>
+                        <td class="p-4 align-top">
+                            <select onchange="updateStatus('${t.ticket_number}', this.value)" class="border border-gray-300 rounded p-1 text-xs outline-none focus:ring-1 focus:ring-blue-500 w-full mb-1">
+                                <option value="" disabled selected>Статус...</option>
+                                <option value="Новое">Новое</option>
+                                <option value="В работе">В работу</option>
+                                <option value="Закрыто">Закрыть</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function updateStatus(num, status) {
+            await fetch(`${API_URL}/admin/tickets/${num}/status`, {
+                method: 'PATCH', headers: { 'admin-key': currentKey, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            loadTickets();
+        }
+
+        async function sendReply(num) {
+            const input = document.getElementById(`reply-input-${num}`);
+            const fileInput = document.getElementById(`reply-file-${num}`);
+            
+            if (!input.value.trim() && (!fileInput.files || fileInput.files.length === 0)) return;
+
+            const formData = new FormData();
+            formData.append('message', input.value);
+            if (fileInput.files[0]) formData.append('file', fileInput.files[0]);
+
+            await fetch(`${API_URL}/admin/tickets/${num}/message`, {
+                method: 'POST', headers: { 'admin-key': currentKey }, body: formData
+            });
+            loadTickets();
+        }
+
+        async function deleteMsg(id) {
+            if(!confirm("Удалить это сообщение?")) return;
+            await fetch(`${API_URL}/admin/messages/${id}`, { method: 'DELETE', headers: { 'admin-key': currentKey } });
+            loadTickets();
+        }
+
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>

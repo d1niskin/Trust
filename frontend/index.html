@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniTrust | Линия комплаенса</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden-tab { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col items-center py-10">
+
+    <header class="text-center mb-10 w-full max-w-md px-4">
+        <h1 class="text-3xl font-bold text-blue-900 mb-2">UniTrust</h1>
+        <p class="text-gray-500 text-sm">Анонимная горячая линия университета</p>
+    </header>
+
+    <main class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+        
+        <!-- Переключатель вкладок -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button onclick="switchTab('create')" id="tab-create" class="flex-1 py-2 text-center font-medium text-blue-600 border-b-2 border-blue-600">Сообщить</button>
+            <button onclick="switchTab('check')" id="tab-check" class="flex-1 py-2 text-center font-medium text-gray-500 hover:text-blue-500">Проверить статус</button>
+        </div>
+
+        <!-- Вкладка 1: СОЗДАТЬ ОБРАЩЕНИЕ -->
+        <div id="content-create" class="block">
+            <form id="createForm" onsubmit="submitTicket(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Категория нарушения</label>
+                    <select id="category" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="" disabled selected>Выберите из списка...</option>
+                        <option value="Коррупция и взятки">Коррупция и взятки</option>
+                        <option value="Академическая этика">Академическая этика (плагиат)</option>
+                        <option value="Харассмент">Харассмент / Давление</option>
+                        <option value="Другое">Другое</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Описание ситуации</label>
+                    <textarea id="description" required rows="4" placeholder="Опишите ситуацию подробно..." class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Прикрепить доказательство (фото/документ)</label>
+                    <input type="file" id="create-file" class="w-full text-sm border p-1.5 rounded-lg text-gray-600">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200">
+                    Отправить анонимно
+                </button>
+            </form>
+
+            <!-- Результат создания -->
+            <div id="createResult" class="hidden-tab mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h3 class="text-green-800 font-bold mb-2">✅ Обращение принято!</h3>
+                <p class="text-sm text-gray-700 mb-3">Сохраните эти данные, восстановить их невозможно:</p>
+                <div class="bg-white p-3 rounded border border-gray-200 mb-2 text-center">
+                    <span class="block text-xs text-gray-500">Номер обращения</span>
+                    <strong id="res-ticket" class="text-lg"></strong>
+                </div>
+                <div class="bg-white p-3 rounded border border-gray-200 text-center">
+                    <span class="block text-xs text-gray-500">PIN-код (Пароль)</span>
+                    <strong id="res-pin" class="text-lg text-red-600"></strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка 2: ПРОВЕРИТЬ СТАТУС -->
+        <div id="content-check" class="hidden-tab">
+            <form id="checkForm" onsubmit="checkTicket(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Номер обращения</label>
+                    <input type="text" id="check-number" required placeholder="Например: UT-1234" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PIN-код</label>
+                    <input type="text" id="check-pin" required placeholder="Введите PIN" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-lg transition duration-200">
+                    Проверить
+                </button>
+            </form>
+
+            <p id="checkError" class="hidden-tab mt-4 text-center text-red-600 text-sm font-medium"></p>
+
+            <!-- Результат проверки и ЧАТ -->
+            <div id="checkResult" class="hidden-tab mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <span id="status-badge" class="px-3 py-1 bg-yellow-200 text-yellow-800 text-xs font-bold rounded-full">В работе</span>
+                    <span id="res-category" class="text-xs text-gray-500 font-medium"></span>
+                </div>
+                <p class="text-sm text-gray-600 mb-1 font-bold">Ваш текст:</p>
+                <p id="res-desc" class="text-sm text-gray-800 italic bg-white p-3 rounded border border-gray-200 mb-4"></p>
+                
+                <!-- БЛОК ЧАТА -->
+                <div class="border-t pt-4">
+                    <h4 class="text-sm font-bold text-gray-700 mb-2">Переписка с комплаенс-контролем</h4>
+                    <div id="chat-history" class="bg-white border rounded p-3 mb-3 max-h-48 overflow-y-auto flex flex-col gap-2">
+                        <!-- Сообщения будут тут -->
+                    </div>
+                    
+                    <div class="flex flex-col gap-2 border-t pt-2 mt-2">
+                        <label class="text-xs text-gray-500">Прикрепить файл к ответу:</label>
+                        <input type="file" id="user-chat-file" class="w-full text-xs text-gray-600 border p-1 rounded">
+                        <div class="flex gap-2">
+                            <input type="text" id="user-chat-input" placeholder="Ваш ответ..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <button onclick="sendUserMessage()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                                Отправить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="mt-8 text-center text-xs text-gray-400">
+        MVP Концепция для кейса
+    </footer>
+
+    <script>
+        const API_URL = "/api/tickets";
+        let currentTicketData = { number: '', pin: '' };
+
+        function switchTab(tab) {
+            document.getElementById('content-create').classList.toggle('block', tab === 'create');
+            document.getElementById('content-create').classList.toggle('hidden-tab', tab !== 'create');
+            document.getElementById('content-check').classList.toggle('block', tab === 'check');
+            document.getElementById('content-check').classList.toggle('hidden-tab', tab !== 'check');
+
+            document.getElementById('tab-create').className = tab === 'create' ? "flex-1 py-2 text-center font-medium text-blue-600 border-b-2 border-blue-600" : "flex-1 py-2 text-center font-medium text-gray-500 hover:text-blue-500";
+            document.getElementById('tab-check').className = tab === 'check' ? "flex-1 py-2 text-center font-medium text-blue-600 border-b-2 border-blue-600" : "flex-1 py-2 text-center font-medium text-gray-500 hover:text-blue-500";
+        }
+
+        async function submitTicket(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('category', document.getElementById('category').value);
+            formData.append('description', document.getElementById('description').value);
+            
+            const fileInput = document.getElementById('create-file');
+            if (fileInput && fileInput.files[0]) formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch(`${API_URL}/create`, { method: 'POST', body: formData });
+                const data = await response.json();
+                
+                document.getElementById('createForm').style.display = 'none';
+                document.getElementById('createResult').classList.remove('hidden-tab');
+                document.getElementById('res-ticket').innerText = data.ticket_number;
+                document.getElementById('res-pin').innerText = data.pin_code;
+            } catch (error) { alert("Ошибка соединения с сервером."); }
+        }
+
+        async function checkTicket(event) {
+            if(event) event.preventDefault();
+            const ticket_number = document.getElementById('check-number').value || currentTicketData.number;
+            const pin_code = document.getElementById('check-pin').value || currentTicketData.pin;
+            document.getElementById('checkError').classList.add('hidden-tab');
+
+            try {
+                const response = await fetch(`${API_URL}/check`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticket_number, pin_code })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    document.getElementById('checkError').innerText = data.detail || "Ошибка проверки";
+                    document.getElementById('checkError').classList.remove('hidden-tab');
+                    return;
+                }
+
+                currentTicketData = { number: ticket_number, pin: pin_code };
+
+                document.getElementById('checkResult').classList.remove('hidden-tab');
+                document.getElementById('status-badge').innerText = data.status;
+                document.getElementById('res-category').innerText = data.category;
+                
+                let descHtml = data.description;
+                if (data.file_url) descHtml += `<br><br><a href="${data.file_url}" target="_blank" class="text-blue-600 underline font-bold text-xs">📎 Прикрепленный к жалобе файл</a>`;
+                document.getElementById('res-desc').innerHTML = descHtml;
+                
+                const chatDiv = document.getElementById('chat-history');
+                if (data.messages.length === 0) chatDiv.innerHTML = '<span class="text-xs text-gray-400 text-center block">Сообщений пока нет</span>';
+                else {
+                    chatDiv.innerHTML = data.messages.map(m => {
+                        let fileHtml = m.file_url ? `<br><a href="${m.file_url}" target="_blank" class="text-blue-700 underline text-xs mt-1 inline-block">📎 Скачать файл</a>` : '';
+                        let delBtn = m.sender === 'Заявитель' ? `<button onclick="deleteUserMessage(${m.id})" class="text-red-500 hover:underline text-xs ml-2">[удалить]</button>` : '';
+                        
+                        return `
+                        <div class="p-2 rounded text-sm mb-1 ${m.sender === 'Заявитель' ? 'bg-blue-50 text-blue-900 self-end w-5/6 text-right' : 'bg-gray-100 text-gray-800 self-start w-5/6'}">
+                            <span class="text-xs font-bold opacity-50 block">${m.sender}</span>
+                            ${m.text} ${fileHtml} ${delBtn}
+                        </div>`;
+                    }).join('');
+                    chatDiv.scrollTop = chatDiv.scrollHeight;
+                }
+            } catch (error) { alert("Ошибка соединения с сервером."); }
+        }
+
+        async function sendUserMessage() {
+            const input = document.getElementById('user-chat-input');
+            const fileInput = document.getElementById('user-chat-file');
+            
+            if (!input.value.trim() && (!fileInput.files || fileInput.files.length === 0)) return;
+
+            const formData = new FormData();
+            formData.append('ticket_number', currentTicketData.number);
+            formData.append('pin_code', currentTicketData.pin);
+            formData.append('message', input.value);
+            if (fileInput.files[0]) formData.append('file', fileInput.files[0]);
+
+            await fetch(`${API_URL}/message`, { method: 'POST', body: formData });
+            
+            input.value = "";
+            fileInput.value = "";
+            checkTicket();
+        }
+
+        async function deleteUserMessage(id) {
+            if(!confirm("Удалить ваше сообщение?")) return;
+            await fetch(`${API_URL}/messages/${id}`, { 
+                method: 'DELETE', 
+                headers: { 'ticket-number': currentTicketData.number, 'pin-code': currentTicketData.pin } 
+            });
+            checkTicket();
+        }
+    </script>
+</body>
+</html>
