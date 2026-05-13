@@ -189,9 +189,8 @@
                             ${m.text} ${fileHtml} ${delBtn}
                         </div>`;
                     }).join('');
-                    chatDiv.scrollTop = chatDiv.scrollHeight;
                 }
-            } catch (error) { alert("Ошибка соединения с сервером."); }
+            } catch (error) { console.error("Ошибка сети"); }
         }
 
         async function sendUserMessage() {
@@ -221,6 +220,18 @@
             });
             checkTicket();
         }
+
+        // Имитация Real-Time: автообновление чата с сохранением позиции скролла
+        setInterval(() => {
+            if(currentTicketData.number && !document.getElementById('content-check').classList.contains('hidden-tab')) {
+                const chatDiv = document.getElementById('chat-history');
+                const isScrolledToBottom = chatDiv.scrollHeight - chatDiv.clientHeight <= chatDiv.scrollTop + 10;
+                
+                checkTicket().then(() => {
+                    if (isScrolledToBottom) chatDiv.scrollTop = chatDiv.scrollHeight;
+                });
+            }
+        }, 2000);
     </script>
 </body>
 </html>

@@ -63,6 +63,12 @@
         }
 
         async function loadTickets() {
+            // Запоминаем то, что офицер печатает прямо сейчас, чтобы не стереть при автообновлении
+            let savedInputs = {};
+            document.querySelectorAll('input[id^="reply-input-"]').forEach(input => {
+                if (input.value) savedInputs[input.id] = input.value;
+            });
+
             const res = await fetch(`${API_URL}/admin/tickets`, { headers: { 'admin-key': currentKey } });
             const tickets = await res.json();
             const tbody = document.getElementById('tickets-table');
@@ -96,14 +102,14 @@
                                 ${mainFileHtml}
                             </div>
                             
-                            <div class="chat-container max-h-40 overflow-y-auto mb-2 pr-2">${chatHtml}</div>
+                            <div class="chat-container max-h-40 overflow-y-auto mb-2 pr-2" id="chat-${t.ticket_number}">${chatHtml}</div>
                             
                             <div class="flex flex-col gap-1 border-t pt-2 border-gray-200 mt-2">
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 mb-1">
                                     <label class="text-xs text-gray-500 font-medium">Вложение:</label>
                                     <input type="file" id="reply-file-${t.ticket_number}" class="text-xs border border-gray-300 p-1 rounded text-gray-600 w-full">
                                 </div>
-                                <div class="flex gap-2 mt-1">
+                                <div class="flex gap-2">
                                     <input type="text" id="reply-input-${t.ticket_number}" placeholder="Текст сообщения..." class="border border-gray-300 rounded p-1.5 text-xs w-full outline-none focus:ring-1 focus:ring-blue-500">
                                     <button onclick="sendReply('${t.ticket_number}')" class="bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-blue-700 transition">Отправить</button>
                                 </div>
@@ -113,14 +119,20 @@
                         <td class="p-4 align-top">
                             <select onchange="updateStatus('${t.ticket_number}', this.value)" class="border border-gray-300 rounded p-1 text-xs outline-none focus:ring-1 focus:ring-blue-500 w-full mb-1">
                                 <option value="" disabled selected>Статус...</option>
-                                <option value="Новое">Новое</option>
-                                <option value="В работе">В работу</option>
-                                <option value="Закрыто">Закрыть</option>
+                                <option value="Новое" ${t.status === 'Новое' ? 'selected' : ''}>Новое</option>
+                                <option value="В работе" ${t.status === 'В работе' ? 'selected' : ''}>В работу</option>
+                                <option value="Закрыто" ${t.status === 'Закрыто' ? 'selected' : ''}>Закрыть</option>
                             </select>
                         </td>
                     </tr>
                 `;
             });
+
+            // Возвращаем недописанный текст обратно в поля
+            for (let id in savedInputs) {
+                let input = document.getElementById(id);
+                if (input) input.value = savedInputs[id];
+            }
         }
 
         async function updateStatus(num, status) {
@@ -154,6 +166,13 @@
         }
 
         function logout() { location.reload(); }
+
+        // Имитация Real-Time: автообновление админки каждые 2 секунды
+        setInterval(() => {
+            if(currentKey && !document.getElementById('dashboard-screen').classList.contains('hidden')) {
+                loadTickets();
+            }
+        }, 2000);
     </script>
 </body>
 </html>
