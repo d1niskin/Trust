@@ -53,7 +53,7 @@
                 </button>
             </form>
 
-            <!-- Результат: Успешное создание (Стиль ЦУ, по центру) -->
+            <!-- Результат: Успешное создание -->
             <div id="createResult" class="hidden-tab mt-6 text-center">
                 <h3 class="text-[26px] font-bold text-black mb-2 tracking-tight">Обращение принято</h3>
                 <p class="text-[15px] text-gray-500 mb-6 leading-snug">Сохраните эти данные, восстановить их невозможно:</p>
@@ -157,9 +157,14 @@
 
         async function checkTicket(event) {
             if(event) event.preventDefault();
+            
+            const errElement = document.getElementById('checkError');
+            errElement.classList.add('hidden-tab');
+
             const ticket_number = document.getElementById('check-number').value || currentTicketData.number;
             const pin_code = document.getElementById('check-pin').value || currentTicketData.pin;
-            document.getElementById('checkError').classList.add('hidden-tab');
+
+            if (!ticket_number || !pin_code) return;
 
             try {
                 const response = await fetch(`${API_URL}/check`, {
@@ -167,13 +172,15 @@
                     body: JSON.stringify({ ticket_number, pin_code })
                 });
 
-                const data = await response.json();
                 if (!response.ok) {
-                    document.getElementById('checkError').innerText = data.detail || "Ошибка проверки";
-                    document.getElementById('checkError').classList.remove('hidden-tab');
+                    const data = await response.json().catch(() => ({}));
+                    errElement.innerText = data.detail || "Неверный номер обращения или PIN-код";
+                    errElement.classList.remove('hidden-tab');
+                    document.getElementById('checkResult').classList.add('hidden-tab');
                     return;
                 }
 
+                const data = await response.json();
                 currentTicketData = { number: ticket_number, pin: pin_code };
 
                 document.getElementById('checkResult').classList.remove('hidden-tab');
@@ -181,7 +188,7 @@
                 document.getElementById('res-category').innerText = data.category;
                 
                 let descHtml = data.description;
-                if (data.file_url) descHtml += `<br><br><a href="${data.file_url}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium text-[14px] underline underline-offset-2">[Отрыть прикрепленный файл]</a>`;
+                if (data.file_url) descHtml += `<br><br><a href="${data.file_url}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium text-[14px] underline underline-offset-2">[Открыть прикрепленный файл]</a>`;
                 document.getElementById('res-desc').innerHTML = descHtml;
                 
                 const chatDiv = document.getElementById('chat-history');
@@ -203,7 +210,10 @@
                         </div>`;
                     }).join('');
                 }
-            } catch (error) { console.error("Ошибка сети"); }
+            } catch (error) { 
+                errElement.innerText = "Сервер недоступен. Проверьте подключение.";
+                errElement.classList.remove('hidden-tab');
+            }
         }
 
         async function sendUserMessage() {
@@ -239,8 +249,8 @@
                 const chatDiv = document.getElementById('chat-history');
                 const isScrolledToBottom = chatDiv.scrollHeight - chatDiv.clientHeight <= chatDiv.scrollTop + 10;
                 
-                checkTicket().then(() => {
-                    if (isScrolledToBottom) chatDiv.scrollTop = chatDiv.scrollHeight;
+                checkTicket().catch(e => console.log(e)).then(() => {
+                    if (isScrolledToBottom && chatDiv) chatDiv.scrollTop = chatDiv.scrollHeight;
                 });
             }
         }, 2000);
