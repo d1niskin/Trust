@@ -45,11 +45,12 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50 text-gray-500 text-[13px] font-semibold">
-                            <th class="p-5 border-b border-gray-200 w-1/6">ID / Дата</th>
-                            <th class="p-5 border-b border-gray-200 w-1/6">Категория</th>
-                            <th class="p-5 border-b border-gray-200 w-1/2">Обращения</th>
-                            <th class="p-5 border-b border-gray-200 w-1/12">Статус</th>
-                            <th class="p-5 border-b border-gray-200 w-1/12">Изменение статуса</th>
+                            <!-- Измененная ширина колонок -->
+                            <th class="p-5 border-b border-gray-200 w-[15%]">ID / Дата</th>
+                            <th class="p-5 border-b border-gray-200 w-[15%]">Категория</th>
+                            <th class="p-5 border-b border-gray-200 w-[40%]">Обращения</th>
+                            <th class="p-5 border-b border-gray-200 w-[12%]">Статус</th>
+                            <th class="p-5 border-b border-gray-200 w-[18%]">Изменение статуса</th>
                         </tr>
                     </thead>
                     <tbody id="tickets-table" class="text-[14px]">
@@ -93,7 +94,6 @@
             tickets.forEach(t => {
                 const date = new Date(t.created_at).toLocaleString('ru', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit'});
                 
-                // Светлые, аккуратные бейджи статусов
                 let statusColor = t.status === "Новое" ? "bg-red-50 text-red-600" : 
                                   t.status === "В работе" ? "bg-[#ffdd2b]/20 text-[#b28c00]" : 
                                   "bg-green-50 text-green-600";
@@ -180,9 +180,14 @@
             formData.append('message', input.value);
             if (fileInput.files[0]) formData.append('file', fileInput.files[0]);
 
+            // Принудительно очищаем поля ДО того, как запустится функция автосохранения и обновления
+            input.value = "";
+            fileInput.value = "";
+
             await fetch(`${API_URL}/admin/tickets/${num}/message`, {
                 method: 'POST', headers: { 'admin-key': currentKey }, body: formData
             });
+            
             loadTickets();
         }
 
