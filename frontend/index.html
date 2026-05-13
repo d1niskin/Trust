@@ -7,27 +7,30 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .hidden-tab { display: none; }
+        /* Добавляем строгий шрифт для заголовков */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col items-center py-10">
+<body class="bg-zinc-50 text-zinc-900 antialiased min-h-screen flex flex-col items-center py-12">
 
     <header class="text-center mb-10 w-full max-w-md px-4">
-        <h1 class="text-3xl font-bold text-blue-900 mb-2">Veritas</h1>
-        <p class="text-gray-500 text-sm">Анонимная горячая линия университета</p>
+        <h1 class="text-4xl font-black tracking-tight text-zinc-950 mb-2 uppercase">Veritas</h1>
+        <p class="text-zinc-500 text-sm font-medium">Анонимная горячая линия университета</p>
     </header>
 
-    <main class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+    <main class="bg-white rounded-3xl shadow-sm border border-zinc-200 w-full max-w-md p-8 relative">
         
-        <div class="flex border-b border-gray-200 mb-6">
-            <button onclick="switchTab('create')" id="tab-create" class="flex-1 py-2 text-center font-medium text-blue-600 border-b-2 border-blue-600">Сообщить</button>
-            <button onclick="switchTab('check')" id="tab-check" class="flex-1 py-2 text-center font-medium text-gray-500 hover:text-blue-500">Проверить статус</button>
+        <div class="flex border-b-2 border-zinc-100 mb-8">
+            <button onclick="switchTab('create')" id="tab-create" class="flex-1 pb-3 text-center font-semibold text-zinc-900 border-b-2 border-zinc-900 transition-colors">Сообщить</button>
+            <button onclick="switchTab('check')" id="tab-check" class="flex-1 pb-3 text-center font-semibold text-zinc-400 hover:text-zinc-900 border-b-2 border-transparent transition-colors">Проверить статус</button>
         </div>
 
         <div id="content-create" class="block">
             <form id="createForm" onsubmit="submitTicket(event)">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Категория нарушения</label>
-                    <select id="category" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-zinc-900 mb-2">Категория нарушения</label>
+                    <select id="category" required class="w-full border-2 border-zinc-200 rounded-xl p-3 focus:border-zinc-900 focus:ring-0 outline-none bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer">
                         <option value="" disabled selected>Выберите из списка...</option>
                         <option value="Коррупция и взятки">Коррупция и взятки</option>
                         <option value="Академическая этика">Академическая этика (плагиат)</option>
@@ -35,69 +38,71 @@
                         <option value="Другое">Другое</option>
                     </select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Описание ситуации</label>
-                    <textarea id="description" required rows="4" placeholder="Опишите ситуацию подробно..." class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-zinc-900 mb-2">Описание ситуации</label>
+                    <textarea id="description" required rows="4" placeholder="Опишите ситуацию подробно..." class="w-full border-2 border-zinc-200 rounded-xl p-3 focus:border-zinc-900 focus:ring-0 outline-none resize-none bg-zinc-50 transition-colors"></textarea>
                 </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Прикрепить доказательства</label>
-                    <input type="file" id="create-file" class="w-full text-sm border p-1.5 rounded-lg text-gray-600">
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-zinc-900 mb-2">Прикрепить доказательства</label>
+                    <input type="file" id="create-file" class="w-full text-sm text-zinc-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-100 file:text-zinc-900 hover:file:bg-zinc-200 transition-colors cursor-pointer">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200">
+                <button type="submit" class="w-full bg-[#ffdd2b] hover:bg-[#f0c800] text-zinc-950 font-bold py-4 rounded-xl transition duration-200 text-lg">
                     Отправить
                 </button>
             </form>
 
-            <div id="createResult" class="hidden-tab mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h3 class="text-green-800 font-bold mb-2">Обращение принято</h3>
-                <p class="text-sm text-gray-700 mb-3">Сохраните эти данные, восстановить их невозможно:</p>
-                <div class="bg-white p-3 rounded border border-gray-200 mb-2 text-center">
-                    <span class="block text-xs text-gray-500">Номер обращения</span>
-                    <strong id="res-ticket" class="text-lg"></strong>
+            <div id="createResult" class="hidden-tab mt-6 p-6 bg-zinc-50 border-2 border-zinc-200 rounded-2xl">
+                <h3 class="text-zinc-950 font-black text-xl mb-2">Обращение принято</h3>
+                <p class="text-sm text-zinc-600 mb-5 font-medium">Сохраните эти данные, восстановить их невозможно:</p>
+                <div class="bg-white p-4 rounded-xl border border-zinc-200 mb-3 flex justify-between items-center shadow-sm">
+                    <span class="text-sm text-zinc-500 font-medium">Номер обращения</span>
+                    <strong id="res-ticket" class="text-lg text-zinc-900 font-black"></strong>
                 </div>
-                <div class="bg-white p-3 rounded border border-gray-200 text-center">
-                    <span class="block text-xs text-gray-500">PIN-код</span>
-                    <strong id="res-pin" class="text-lg text-red-600"></strong>
+                <div class="bg-white p-4 rounded-xl border border-zinc-200 flex justify-between items-center shadow-sm">
+                    <span class="text-sm text-zinc-500 font-medium">PIN-код</span>
+                    <strong id="res-pin" class="text-lg text-[#ffdd2b] bg-zinc-950 px-3 py-1 rounded-lg font-black tracking-widest"></strong>
                 </div>
             </div>
         </div>
 
         <div id="content-check" class="hidden-tab">
             <form id="checkForm" onsubmit="checkTicket(event)">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Номер обращения</label>
-                    <input type="text" id="check-number" required placeholder="Например: UT-1234" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-zinc-900 mb-2">Номер обращения</label>
+                    <input type="text" id="check-number" required placeholder="Например: UT-1234" class="w-full border-2 border-zinc-200 rounded-xl p-3 focus:border-zinc-900 focus:ring-0 outline-none bg-zinc-50 transition-colors font-medium">
                 </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">PIN-код</label>
-                    <input type="text" id="check-pin" required placeholder="Введите PIN" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-zinc-900 mb-2">PIN-код</label>
+                    <input type="text" id="check-pin" required placeholder="Введите PIN" class="w-full border-2 border-zinc-200 rounded-xl p-3 focus:border-zinc-900 focus:ring-0 outline-none bg-zinc-50 transition-colors font-medium tracking-widest">
                 </div>
-                <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-lg transition duration-200">
+                <button type="submit" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white font-bold py-4 rounded-xl transition duration-200 text-lg">
                     Проверить
                 </button>
             </form>
 
-            <p id="checkError" class="hidden-tab mt-4 text-center text-red-600 text-sm font-medium"></p>
+            <p id="checkError" class="hidden-tab mt-5 text-center text-red-500 text-sm font-semibold"></p>
 
-            <div id="checkResult" class="hidden-tab mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                <div class="flex justify-between items-center mb-4">
-                    <span id="status-badge" class="px-3 py-1 bg-yellow-200 text-yellow-800 text-xs font-bold rounded-full">В работе</span>
-                    <span id="res-category" class="text-xs text-gray-500 font-medium"></span>
+            <div id="checkResult" class="hidden-tab mt-6 p-1">
+                <div class="flex justify-between items-center mb-6 border-b-2 border-zinc-100 pb-4">
+                    <span id="status-badge" class="px-3 py-1 bg-zinc-900 text-white text-xs font-bold rounded-md uppercase tracking-wide">В работе</span>
+                    <span id="res-category" class="text-xs text-zinc-500 font-semibold uppercase tracking-wide"></span>
                 </div>
-                <p class="text-sm text-gray-600 mb-1 font-bold">Текст обращения:</p>
-                <p id="res-desc" class="text-sm text-gray-800 italic bg-white p-3 rounded border border-gray-200 mb-4"></p>
                 
-                <div class="border-t pt-4">
-                    <h4 class="text-sm font-bold text-gray-700 mb-2">Связь с отделом коррупционного контроля</h4>
-                    <div id="chat-history" class="bg-white border rounded p-3 mb-3 max-h-48 overflow-y-auto flex flex-col gap-2">
+                <div class="bg-zinc-50 p-5 rounded-2xl border border-zinc-200 mb-6">
+                    <p class="text-xs text-zinc-500 mb-2 font-bold uppercase tracking-wider">Текст обращения:</p>
+                    <p id="res-desc" class="text-sm text-zinc-900 font-medium leading-relaxed"></p>
+                </div>
+                
+                <div class="">
+                    <h4 class="text-sm font-bold text-zinc-900 mb-4 uppercase tracking-wide">Связь с отделом коррупционного контроля</h4>
+                    <div id="chat-history" class="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 mb-4 max-h-64 overflow-y-auto flex flex-col gap-3">
                     </div>
                     
-                    <div class="flex flex-col gap-2 border-t pt-2 mt-2">
-                        <label class="text-xs text-gray-500">Прикрепить файл</label>
-                        <input type="file" id="user-chat-file" class="w-full text-xs text-gray-600 border p-1 rounded">
+                    <div class="flex flex-col gap-3">
+                        <input type="file" id="user-chat-file" class="w-full text-xs text-zinc-600 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-zinc-100 file:text-zinc-900 hover:file:bg-zinc-200 transition-colors cursor-pointer">
                         <div class="flex gap-2">
-                            <input type="text" id="user-chat-input" placeholder="Ваш ответ..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            <button onclick="sendUserMessage()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                            <input type="text" id="user-chat-input" placeholder="Ваш ответ..." class="w-full border-2 border-zinc-200 rounded-xl p-3 text-sm focus:border-zinc-900 outline-none bg-zinc-50 font-medium">
+                            <button onclick="sendUserMessage()" class="bg-[#ffdd2b] hover:bg-[#f0c800] text-zinc-950 font-bold py-3 px-6 rounded-xl transition duration-200">
                                 Отправить
                             </button>
                         </div>
@@ -107,7 +112,7 @@
         </div>
     </main>
 
-    <footer class="mt-8 text-center text-xs text-gray-400">
+    <footer class="mt-12 text-center text-xs font-medium text-zinc-400 uppercase tracking-widest">
         Система анонимного репортинга
     </footer>
 
@@ -121,8 +126,8 @@
             document.getElementById('content-check').classList.toggle('block', tab === 'check');
             document.getElementById('content-check').classList.toggle('hidden-tab', tab !== 'check');
 
-            document.getElementById('tab-create').className = tab === 'create' ? "flex-1 py-2 text-center font-medium text-blue-600 border-b-2 border-blue-600" : "flex-1 py-2 text-center font-medium text-gray-500 hover:text-blue-500";
-            document.getElementById('tab-check').className = tab === 'check' ? "flex-1 py-2 text-center font-medium text-blue-600 border-b-2 border-blue-600" : "flex-1 py-2 text-center font-medium text-gray-500 hover:text-blue-500";
+            document.getElementById('tab-create').className = tab === 'create' ? "flex-1 pb-3 text-center font-semibold text-zinc-900 border-b-2 border-zinc-900 transition-colors" : "flex-1 pb-3 text-center font-semibold text-zinc-400 hover:text-zinc-900 border-b-2 border-transparent transition-colors";
+            document.getElementById('tab-check').className = tab === 'check' ? "flex-1 pb-3 text-center font-semibold text-zinc-900 border-b-2 border-zinc-900 transition-colors" : "flex-1 pb-3 text-center font-semibold text-zinc-400 hover:text-zinc-900 border-b-2 border-transparent transition-colors";
         }
 
         async function submitTicket(event) {
@@ -172,21 +177,26 @@
                 document.getElementById('res-category').innerText = data.category;
                 
                 let descHtml = data.description;
-                if (data.file_url) descHtml += `<br><br><a href="${data.file_url}" target="_blank" class="text-blue-600 underline font-bold text-xs">[Отрыть прикрепленный файл]</a>`;
+                if (data.file_url) descHtml += `<br><br><a href="${data.file_url}" target="_blank" class="text-blue-600 hover:text-blue-800 font-bold text-xs underline decoration-2 underline-offset-2">[Отрыть прикрепленный файл]</a>`;
                 document.getElementById('res-desc').innerHTML = descHtml;
                 
                 const chatDiv = document.getElementById('chat-history');
                 if (data.messages.length === 0) {
-                    chatDiv.innerHTML = '<span class="text-xs text-gray-400 text-center block">Переписка отсутствует</span>';
+                    chatDiv.innerHTML = '<span class="text-xs text-zinc-400 font-medium text-center block py-4">Переписка отсутствует</span>';
                 } else {
                     chatDiv.innerHTML = data.messages.map(m => {
-                        let fileHtml = m.file_url ? `<br><a href="${m.file_url}" target="_blank" class="text-blue-700 underline text-xs mt-1 inline-block">[Прикрепленный файл]</a>` : '';
-                        let delBtn = m.sender === 'Заявитель' ? `<button onclick="deleteUserMessage(${m.id})" class="text-red-500 hover:underline text-xs ml-2">[удалить]</button>` : '';
+                        let fileHtml = m.file_url ? `<br><a href="${m.file_url}" target="_blank" class="text-zinc-900 underline decoration-2 underline-offset-2 text-xs mt-2 inline-block font-bold">[Прикрепленный файл]</a>` : '';
+                        let delBtn = m.sender === 'Заявитель' ? `<button onclick="deleteUserMessage(${m.id})" class="text-red-500 hover:text-red-700 font-semibold text-xs ml-3">[удалить]</button>` : '';
                         
+                        // Стилизация сообщений: желтые для офицера, белые для студента
+                        let bubbleClass = m.sender === 'Заявитель' ? 
+                            'bg-white border border-zinc-200 text-zinc-900 self-end text-right' : 
+                            'bg-[#ffdd2b] text-zinc-950 self-start';
+                            
                         return `
-                        <div class="p-2 rounded text-sm mb-1 ${m.sender === 'Заявитель' ? 'bg-blue-50 text-blue-900 self-end w-5/6 text-right' : 'bg-gray-100 text-gray-800 self-start w-5/6'}">
-                            <span class="text-xs font-bold opacity-50 block">${m.sender}</span>
-                            ${m.text} ${fileHtml} ${delBtn}
+                        <div class="p-3 rounded-2xl text-sm w-5/6 shadow-sm ${bubbleClass}">
+                            <span class="text-[10px] font-black uppercase tracking-wider opacity-60 block mb-1">${m.sender}</span>
+                            <span class="font-medium leading-relaxed">${m.text}</span> ${fileHtml} ${delBtn}
                         </div>`;
                     }).join('');
                 }
@@ -221,7 +231,6 @@
             checkTicket();
         }
 
-        // Имитация Real-Time: автообновление чата с сохранением позиции скролла
         setInterval(() => {
             if(currentTicketData.number && !document.getElementById('content-check').classList.contains('hidden-tab')) {
                 const chatDiv = document.getElementById('chat-history');
