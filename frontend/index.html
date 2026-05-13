@@ -53,19 +53,19 @@
                 </button>
             </form>
 
-            <!-- Результат: Успешное создание (Стиль ЦУ из скриншота) -->
-            <div id="createResult" class="hidden-tab mt-4">
+            <!-- Результат: Успешное создание (Стиль ЦУ, по центру) -->
+            <div id="createResult" class="hidden-tab mt-6 text-center">
                 <h3 class="text-[26px] font-bold text-black mb-2 tracking-tight">Обращение принято</h3>
-                <p class="text-[15px] text-gray-500 mb-6 leading-snug">Сохраните эти данные, восстановить их<br>невозможно:</p>
+                <p class="text-[15px] text-gray-500 mb-6 leading-snug">Сохраните эти данные, восстановить их невозможно:</p>
                 
                 <div class="flex flex-col gap-3">
-                    <div class="bg-white px-5 py-4 rounded-2xl border border-gray-200 flex justify-between items-center">
-                        <span class="text-[15px] text-gray-500">Номер обращения</span>
-                        <strong id="res-ticket" class="text-[20px] text-black font-bold"></strong>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 flex flex-col items-center justify-center shadow-sm">
+                        <span class="text-[14px] text-gray-500 font-medium mb-1">Номер обращения</span>
+                        <strong id="res-ticket" class="text-[24px] text-black font-bold tracking-wide"></strong>
                     </div>
-                    <div class="bg-white px-5 py-4 rounded-2xl border border-gray-200 flex justify-between items-center">
-                        <span class="text-[15px] text-gray-500">PIN-код</span>
-                        <strong id="res-pin" class="text-[18px] text-[#ffdd2b] bg-[#0f0f11] px-4 py-1.5 rounded-xl font-bold tracking-wider"></strong>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 flex flex-col items-center justify-center shadow-sm">
+                        <span class="text-[14px] text-gray-500 font-medium mb-2">PIN-код</span>
+                        <strong id="res-pin" class="text-[20px] text-[#ffdd2b] bg-[#0f0f11] px-6 py-2 rounded-xl font-bold tracking-widest inline-block"></strong>
                     </div>
                 </div>
             </div>
