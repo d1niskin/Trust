@@ -42,7 +42,7 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50 text-gray-500 text-[13px] font-semibold">
-                            <th class="p-5 border-b border-gray-200 w-[15%]">ID / Дата (МСК)</th>
+                            <th class="p-5 border-b border-gray-200 w-[15%]">ID / Дата</th>
                             <th class="p-5 border-b border-gray-200 w-[15%]">Категория</th>
                             <th class="p-5 border-b border-gray-200 w-[40%]">Обращения</th>
                             <th class="p-5 border-b border-gray-200 w-[12%]">Статус</th>
@@ -87,18 +87,29 @@
             tbody.innerHTML = "";
 
             tickets.forEach(t => {
-                // ИСПРАВЛЕННАЯ ОБРАБОТКА ДАТЫ
-                let safeDate = t.created_at.replace(' ', 'T'); // чиним питоновский формат
-                if (!safeDate.includes('Z') && !safeDate.includes('+')) {
-                    safeDate += 'Z'; // указываем, что это UTC (серверное время)
-                }
                 
-                let d = new Date(safeDate);
-                let date = isNaN(d) ? t.created_at : d.toLocaleString('ru-RU', {
-                    timeZone: 'Europe/Moscow',
-                    day: '2-digit', month: '2-digit', year: 'numeric',
-                    hour: '2-digit', minute:'2-digit'
-                });
+                // ПУЛЕНЕПРОБИВАЕМАЯ ОБРАБОТКА ДАТЫ
+                let date = "Нет данных";
+                if (t.created_at) {
+                    let rawDate = String(t.created_at);
+                    let safeStr = rawDate.trim().replace(' ', 'T');
+                    
+                    if (!safeStr.endsWith('Z') && !safeStr.match(/[\+\-]\d{2}:\d{2}$/)) {
+                        safeStr += 'Z';
+                    }
+                    
+                    let d = new Date(safeStr);
+                    if (!isNaN(d.getTime())) {
+                        date = d.toLocaleString('ru-RU', {
+                            timeZone: 'Europe/Moscow',
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute:'2-digit'
+                        });
+                    } else {
+                        // Если браузер не понял формат, выводим как есть, отрезав лишние секунды
+                        date = rawDate.substring(0, 16).replace('T', ' ');
+                    }
+                }
                 
                 let statusColor = t.status === "Новое" ? "bg-red-50 text-red-600" : 
                                   t.status === "В работе" ? "bg-[#ffdd2b]/20 text-[#b28c00]" : 
