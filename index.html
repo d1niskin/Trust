@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veritas | Анонимная горячая линия университета</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden-tab { display: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#f4f4f5] text-gray-900 antialiased min-h-screen flex flex-col items-center py-12">
+
+    <!-- Шапка -->
+    <header class="text-center mb-8 w-full max-w-md px-4">
+        <h1 class="text-[32px] font-bold tracking-tight text-black mb-1">Veritas</h1>
+        <p class="text-gray-500 text-[15px] font-medium">Анонимная горячая линия университета</p>
+    </header>
+
+    <main class="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-md p-8 relative">
+        
+        <!-- Навигация -->
+        <div class="flex border-b border-gray-200 mb-8">
+            <button onclick="switchTab('create')" id="tab-create" class="flex-1 pb-4 text-center text-[15px] font-semibold text-black border-b-2 border-black transition-colors">Сообщить</button>
+            <button onclick="switchTab('check')" id="tab-check" class="flex-1 pb-4 text-center text-[15px] font-medium text-gray-400 hover:text-gray-700 border-b-2 border-transparent transition-colors">Проверить статус</button>
+        </div>
+
+        <!-- Вкладка: Создание -->
+        <div id="content-create" class="block">
+            <form id="createForm" onsubmit="submitTicket(event)">
+                <div class="mb-5">
+                    <label class="block text-[14px] font-semibold text-black mb-2">Категория обращения</label>
+                    <select id="category" required class="w-full border border-gray-200 rounded-2xl p-3.5 text-[15px] focus:border-black focus:ring-0 outline-none bg-white hover:bg-gray-50 transition-colors cursor-pointer appearance-none">
+                        <option value="" disabled selected>Выберите из списка...</option>
+                        <option value="Коррупция и взятки">Коррупция и взятки</option>
+                        <option value="Академическая этика">Академическая этика (плагиат)</option>
+                        <option value="Харассмент">Харассмент / Давление</option>
+                        <option value="Другое">Другое</option>
+                    </select>
+                </div>
+                <div class="mb-5">
+                    <label class="block text-[14px] font-semibold text-black mb-2">Описание ситуации</label>
+                    <textarea id="description" required rows="4" placeholder="Опишите ситуацию подробно..." class="w-full border border-gray-200 rounded-2xl p-3.5 text-[15px] focus:border-black focus:ring-0 outline-none resize-none bg-white transition-colors"></textarea>
+                </div>
+                <div class="mb-8">
+                    <label class="block text-[14px] font-semibold text-black mb-2">Прикрепить доказательства</label>
+                    <input type="file" id="create-file" class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-[14px] file:font-semibold file:bg-gray-100 file:text-black hover:file:bg-gray-200 transition-colors cursor-pointer">
+                </div>
+                <button type="submit" class="w-full bg-[#ffdd2b] hover:bg-[#f5d321] text-black font-semibold py-4 rounded-2xl transition duration-200 text-[16px]">
+                    Отправить
+                </button>
+            </form>
+
+            <!-- Результат: Успешное создание (Стиль ЦУ, по центру) -->
+            <div id="createResult" class="hidden-tab mt-6 text-center">
+                <h3 class="text-[26px] font-bold text-black mb-2 tracking-tight">Обращение принято</h3>
+                <p class="text-[15px] text-gray-500 mb-6 leading-snug">Сохраните эти данные, восстановить их невозможно:</p>
+                
+                <div class="flex flex-col gap-3">
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 flex flex-col items-center justify-center shadow-sm">
+                        <span class="text-[14px] text-gray-500 font-medium mb-1">Номер обращения</span>
+                        <strong id="res-ticket" class="text-[24px] text-black font-bold tracking-wide"></strong>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 flex flex-col items-center justify-center shadow-sm">
+                        <span class="text-[14px] text-gray-500 font-medium mb-2">PIN-код</span>
+                        <strong id="res-pin" class="text-[20px] text-[#ffdd2b] bg-[#0f0f11] px-6 py-2 rounded-xl font-bold tracking-widest inline-block"></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка: Проверка статуса -->
+        <div id="content-check" class="hidden-tab">
+            <form id="checkForm" onsubmit="checkTicket(event)">
+                <div class="mb-5">
+                    <label class="block text-[14px] font-semibold text-black mb-2">Номер обращения</label>
+                    <input type="text" id="check-number" required placeholder="Например: UT-1234" class="w-full border border-gray-200 rounded-2xl p-3.5 text-[15px] focus:border-black focus:ring-0 outline-none bg-white transition-colors font-medium">
+                </div>
+                <div class="mb-8">
+                    <label class="block text-[14px] font-semibold text-black mb-2">PIN-код</label>
+                    <input type="text" id="check-pin" required placeholder="Введите PIN" class="w-full border border-gray-200 rounded-2xl p-3.5 text-[15px] focus:border-black focus:ring-0 outline-none bg-white transition-colors font-medium tracking-wider">
+                </div>
+                <button type="submit" class="w-full bg-black hover:bg-gray-800 text-white font-semibold py-4 rounded-2xl transition duration-200 text-[16px]">
+                    Проверить
+                </button>
+            </form>
+
+            <p id="checkError" class="hidden-tab mt-5 text-center text-red-500 text-[14px] font-medium"></p>
+
+            <!-- Результат: Детали и чат -->
+            <div id="checkResult" class="hidden-tab mt-8">
+                <div class="flex justify-between items-center mb-5">
+                    <span id="status-badge" class="px-3 py-1 bg-gray-100 text-black text-[13px] font-semibold rounded-lg">В работе</span>
+                    <span id="res-category" class="text-[13px] text-gray-400 font-medium"></span>
+                </div>
+                
+                <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100 mb-6">
+                    <p class="text-[13px] text-gray-500 mb-2 font-medium">Текст обращения:</p>
+                    <p id="res-desc" class="text-[15px] text-black leading-relaxed"></p>
+                </div>
+                
+                <div>
+                    <h4 class="text-[15px] font-semibold text-black mb-4">Связь с отделом коррупционного контроля</h4>
+                    <div id="chat-history" class="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-4 max-h-64 overflow-y-auto flex flex-col gap-3">
+                    </div>
+                    
+                    <div class="flex flex-col gap-3">
+                        <input type="file" id="user-chat-file" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[13px] file:font-semibold file:bg-gray-100 file:text-black hover:file:bg-gray-200 transition-colors cursor-pointer">
+                        <div class="flex gap-2">
+                            <input type="text" id="user-chat-input" placeholder="Ваш ответ..." class="w-full border border-gray-200 rounded-2xl p-3.5 text-[15px] focus:border-black outline-none bg-white">
+                            <button onclick="sendUserMessage()" class="bg-black hover:bg-gray-800 text-white font-semibold py-3 px-6 rounded-2xl transition duration-200 text-[15px]">
+                                Отправить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "/api/tickets";
+        let currentTicketData = { number: '', pin: '' };
+
+        function switchTab(tab) {
+            document.getElementById('content-create').classList.toggle('block', tab === 'create');
+            document.getElementById('content-create').classList.toggle('hidden-tab', tab !== 'create');
+            document.getElementById('content-check').classList.toggle('block', tab === 'check');
+            document.getElementById('content-check').classList.toggle('hidden-tab', tab !== 'check');
+
+            document.getElementById('tab-create').className = tab === 'create' ? "flex-1 pb-4 text-center text-[15px] font-semibold text-black border-b-2 border-black transition-colors" : "flex-1 pb-4 text-center text-[15px] font-medium text-gray-400 hover:text-gray-700 border-b-2 border-transparent transition-colors";
+            document.getElementById('tab-check').className = tab === 'check' ? "flex-1 pb-4 text-center text-[15px] font-semibold text-black border-b-2 border-black transition-colors" : "flex-1 pb-4 text-center text-[15px] font-medium text-gray-400 hover:text-gray-700 border-b-2 border-transparent transition-colors";
+        }
+
+        async function submitTicket(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('category', document.getElementById('category').value);
+            formData.append('description', document.getElementById('description').value);
+            
+            const fileInput = document.getElementById('create-file');
+            if (fileInput && fileInput.files[0]) formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch(`${API_URL}/create`, { method: 'POST', body: formData });
+                const data = await response.json();
+                
+                document.getElementById('createForm').style.display = 'none';
+                document.getElementById('createResult').classList.remove('hidden-tab');
+                document.getElementById('res-ticket').innerText = data.ticket_number;
+                document.getElementById('res-pin').innerText = data.pin_code;
+            } catch (error) { alert("Ошибка соединения с сервером."); }
+        }
+
+        async function checkTicket(event) {
+            if(event) event.preventDefault();
+            const ticket_number = document.getElementById('check-number').value || currentTicketData.number;
+            const pin_code = document.getElementById('check-pin').value || currentTicketData.pin;
+            document.getElementById('checkError').classList.add('hidden-tab');
+
+            try {
+                const response = await fetch(`${API_URL}/check`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticket_number, pin_code })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    document.getElementById('checkError').innerText = data.detail || "Ошибка проверки";
+                    document.getElementById('checkError').classList.remove('hidden-tab');
+                    return;
+                }
+
+                currentTicketData = { number: ticket_number, pin: pin_code };
+
+                document.getElementById('checkResult').classList.remove('hidden-tab');
+                document.getElementById('status-badge').innerText = data.status;
+                document.getElementById('res-category').innerText = data.category;
+                
+                let descHtml = data.description;
+                if (data.file_url) descHtml += `<br><br><a href="${data.file_url}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium text-[14px] underline underline-offset-2">[Отрыть прикрепленный файл]</a>`;
+                document.getElementById('res-desc').innerHTML = descHtml;
+                
+                const chatDiv = document.getElementById('chat-history');
+                if (data.messages.length === 0) {
+                    chatDiv.innerHTML = '<span class="text-[14px] text-gray-400 font-medium text-center block py-4">Переписка отсутствует</span>';
+                } else {
+                    chatDiv.innerHTML = data.messages.map(m => {
+                        let fileHtml = m.file_url ? `<br><a href="${m.file_url}" target="_blank" class="text-black underline underline-offset-2 text-[13px] mt-2 inline-block font-medium">[Прикрепленный файл]</a>` : '';
+                        let delBtn = m.sender === 'Заявитель' ? `<button onclick="deleteUserMessage(${m.id})" class="text-gray-400 hover:text-red-500 font-medium text-[12px] ml-3 transition-colors">[удалить]</button>` : '';
+                        
+                        let bubbleClass = m.sender === 'Заявитель' ? 
+                            'bg-white border border-gray-200 text-black self-end text-right' : 
+                            'bg-[#ffdd2b] text-black self-start';
+                            
+                        return `
+                        <div class="p-3.5 rounded-2xl text-[14px] w-5/6 shadow-sm ${bubbleClass}">
+                            <span class="text-[11px] font-semibold text-black/50 block mb-1">${m.sender}</span>
+                            <span class="leading-relaxed">${m.text}</span> ${fileHtml} ${delBtn}
+                        </div>`;
+                    }).join('');
+                }
+            } catch (error) { console.error("Ошибка сети"); }
+        }
+
+        async function sendUserMessage() {
+            const input = document.getElementById('user-chat-input');
+            const fileInput = document.getElementById('user-chat-file');
+            
+            if (!input.value.trim() && (!fileInput.files || fileInput.files.length === 0)) return;
+
+            const formData = new FormData();
+            formData.append('ticket_number', currentTicketData.number);
+            formData.append('pin_code', currentTicketData.pin);
+            formData.append('message', input.value);
+            if (fileInput.files[0]) formData.append('file', fileInput.files[0]);
+
+            await fetch(`${API_URL}/message`, { method: 'POST', body: formData });
+            
+            input.value = "";
+            fileInput.value = "";
+            checkTicket();
+        }
+
+        async function deleteUserMessage(id) {
+            if(!confirm("Удалить сообщение?")) return;
+            await fetch(`${API_URL}/messages/${id}`, { 
+                method: 'DELETE', 
+                headers: { 'ticket-number': currentTicketData.number, 'pin-code': currentTicketData.pin } 
+            });
+            checkTicket();
+        }
+
+        setInterval(() => {
+            if(currentTicketData.number && !document.getElementById('content-check').classList.contains('hidden-tab')) {
+                const chatDiv = document.getElementById('chat-history');
+                const isScrolledToBottom = chatDiv.scrollHeight - chatDiv.clientHeight <= chatDiv.scrollTop + 10;
+                
+                checkTicket().then(() => {
+                    if (isScrolledToBottom) chatDiv.scrollTop = chatDiv.scrollHeight;
+                });
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
