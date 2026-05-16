@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse  # <-- Библиотека для раздачи HTML
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from PIL import Image  # <-- Библиотека для работы с графикой (Metadata Scrubber)
 
 import models
 import security
@@ -15,7 +16,7 @@ from models import SessionLocal, engine
 # Создаем папку для файлов
 os.makedirs("uploads", exist_ok=True)
 
-app = FastAPI(title="UniTrust API", version="1.0")
+app = FastAPI(title="Veritas API", version="1.0")
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
@@ -27,16 +28,105 @@ def get_db():
     try: yield db
     finally: db.close()
 
-# --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 def save_file(file: UploadFile, prefix: str):
     if not file or not file.filename: return None
     ext = file.filename.split('.')[-1]
     safe_name = f"{prefix}_{random.randint(10000, 99999)}.{ext}"
     path = f"uploads/{safe_name}"
+    
+    # 1. Сохраняем исходный файл на диск
     with open(path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    # Для MVP оставляем относительный путь, чтобы работало и локально, и через туннель
-    return f"/{path}" 
+    
+    ext_lower = ext.lower()
+    
+    # --- СВЕРХВЫНОСЛИВЫЙ ДВИЖОК ОЧИСТКИ МЕТАДАННЫХ (VERITAS SCRUBBER ENGINE) ---
+    
+    # А. Картинки (JPEG, JPG, PNG)
+    if ext_lower in ['jpg', 'jpeg', 'png']:
+        try:
+            with Image.open(path) as img:
+                format_type = img.format
+                clean_img = Image.new(img.mode, img.size)
+                clean_img.putdata(list(img.getdata()))
+                clean_img.save(path, format=format_type)
+            print(f"[Veritas Scrubber] Очищен EXIF снимка: {path}")
+        except Exception as e:
+            print(f"[Veritas Scrubber Error] Картинка {path}: {e}")
+            
+    # Б. Документы PDF
+    elif ext_lower == 'pdf':
+        try:
+            from pypdf import PdfReader, PdfWriter
+            reader = PdfReader(path)
+            writer = PdfWriter()
+            for page in reader.pages:
+                writer.add_page(page)
+            writer.add_metadata({}) 
+            with open(path, "wb") as f:
+                writer.write(f)
+            print(f"[Veritas Scrubber] Стерты метаданные PDF: {path}")
+        except Exception as e:
+            print(f"[Veritas Scrubber Error] PDF {path}: {e}")
+            
+    # В. Текстовые документы (DOCX) и Таблицы (XLSX)
+    elif ext_lower in ['docx', 'xlsx']:
+        try:
+            if ext_lower == 'docx':
+                from docx import Document
+                doc = Document(path)
+                props = doc.core_properties
+            else:
+                import openpyxl
+                doc = openpyxl.load_workbook(path)
+                props = doc.properties
+                
+            # Затираем ФИО автора лицензии Office/Windows
+            props.author = "" if ext_lower == 'docx' else None
+            if ext_lower == 'docx': props.last_modified_by = ""
+            else: props.lastModifiedBy = None
+            props.title = ""
+            props.subject = ""
+            
+            doc.save(path)
+            print(f"[Veritas Scrubber] Стерты свойства автора {ext_upper}: {path}")
+        except Exception as e:
+            print(f"[Veritas Scrubber Error] Документ {ext_lower} {path}: {e}")
+            
+    # Г. Презентации PowerPoint (PPTX)
+    elif ext_lower == 'pptx':
+        try:
+            from pptx import Presentation
+            prs = Presentation(path)
+            props = prs.core_properties
+            
+            # Удаляем цифровой след создателя слайдов
+            props.author = ""
+            props.last_modified_by = ""
+            props.title = ""
+            props.subject = ""
+            
+            prs.save(path)
+            print(f"[Veritas Scrubber] Стерты свойства автора презентации PPTX: {path}")
+        except Exception as e:
+            print(f"[Veritas Scrubber Error] PPTX {path}: {e}")
+            
+    # Д. Аудио и Видео улики (MP3, MP4, WAV, M4A)
+    elif ext_lower in ['mp3', 'mp4', 'wav', 'm4a']:
+        try:
+            from mutagen import File as MutagenFile
+            media_file = MutagenFile(path)
+            if media_file is not None:
+                # Полностью жестко удаляем все ID3-теги, метаданные устройства,
+                # софт кодирования и скрытые GPS-координаты из атомов медиафайла
+                media_file.delete()
+                media_file.save()
+                print(f"[Veritas Scrubber] Медиафайл полностью очищен от тегов и GPS: {path}")
+        except Exception as e:
+            print(f"[Veritas Scrubber Error] Медиафайл {path}: {e}")
+
+    return f"/{path}"
+
 
 def get_ticket_messages(db, ticket_number):
     msgs = db.query(models.Message).filter(models.Message.ticket_number == ticket_number).order_by(models.Message.created_at).all()
