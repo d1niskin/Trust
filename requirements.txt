@@ -3,3 +3,9 @@ uvicorn
 sqlalchemy
 python-multipart
 cryptography
+mutagen
+python-pptx
+openpyxl
+python-docx
+pypdf
+Pillow
